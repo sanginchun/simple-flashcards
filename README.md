@@ -1,8 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 📚 Flashcards App
 
-## Getting Started
+A URL-based flashcard application built with Next.js and TypeScript. All flashcard data is stored in the URL (similar to Excalidraw), making it easy to share and access without requiring a database.
 
-First, run the development server:
+## ✨ Features
+
+- **URL-based Storage**: All flashcard data is encoded in the URL using base64 compression
+- **No Database Required**: Share flashcards by simply sharing the URL
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Study Mode**: Interactive flashcard studying with progress tracking
+- **Create & Edit**: Easy-to-use interface for creating and editing flashcard sets
+- **Hash Routing**: Clean URLs with hash-based routing for better sharing
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm, yarn, pnpm, or bun
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd flashcards
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
+
+3. Run the development server:
 
 ```bash
 npm run dev
@@ -10,31 +45,80 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## 🎯 Usage
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+### Creating Flashcards
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+1. Go to the home page and click "Create New Set"
+2. Add a title for your flashcard set
+3. Add cards with front (question) and back (answer) content
+4. Save your flashcard set
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Studying Flashcards
 
-## Learn More
+1. Click "Share" on your created set to get a study URL
+2. Open the study URL to start studying
+3. Use the flip button to reveal answers
+4. Track your progress with correct/incorrect buttons
 
-To learn more about Next.js, take a look at the following resources:
+### Sharing Flashcards
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+- Share the study URL with others
+- No account required - anyone with the URL can study the flashcards
+- URLs are portable and work across devices
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🏗️ Architecture
 
-## Deploy on Vercel
+- **Next.js Pages Router**: File-based routing system
+- **TypeScript**: Full type safety throughout the application
+- **Tailwind CSS**: Utility-first CSS framework for styling
+- **Hash-based URLs**: Data stored in URL hash for better sharing
+- **Compression**: Uses fflate for efficient data compression
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+```
+src/
+├── pages/
+│   ├── index.tsx          # Home page
+│   ├── create.tsx         # Create/edit flashcards
+│   └── view.tsx           # Study flashcards
+├── types/
+│   └── index.ts           # TypeScript type definitions
+├── utils/
+│   ├── urlData.ts         # URL encoding/decoding utilities
+│   └── flashcards.ts      # Flashcard manipulation utilities
+└── styles/
+    └── globals.css        # Global styles
+```
+
+## 🔧 Development Commands
+
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+
+# Run linting
+npm run lint
+
+# Type checking
+npx tsc --noEmit
+```
+
+## 📝 Data Format
+
+Flashcard data is stored in the URL hash as compressed base64. The format includes:
+
+- Flashcard set title
+- Array of cards with front/back content
+- Unique IDs for each card and set
