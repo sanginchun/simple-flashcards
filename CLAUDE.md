@@ -53,3 +53,54 @@ npm run lint
 - Max card text: 200 characters per side
 - Max URL data: ~1500 characters total
 - These limits ensure URL compatibility across browsers
+
+## TODOs
+
+### UI Improvements
+- **Component Library**: Implement HeadlessUI or ShadCN for better UI components
+- **Animation Effects**: Add smooth animations for:
+  - Card flipping transitions
+  - Next/Previous card transitions
+  - Loading states and interactions
+- **Mobile Responsive**: Improve responsive design for mobile landscape mode
+  - Optimize layout for horizontal orientation
+  - Adjust card sizing and spacing
+  - Ensure buttons and navigation are easily accessible
+- **Internationalization (i18n)**: Add multi-language support
+  - Implement next-i18next or similar i18n solution
+  - Extract all UI text strings to translation files
+  - Support for RTL languages
+  - Language switcher in UI
+- **MCP Support**: Implement Model Context Protocol integration
+  - Create MCP server endpoints for flashcard data access
+  - Enable AI-powered flashcard generation from content
+  - Allow external MCP clients to interact with flashcard data
+  - Implement secure authentication for MCP connections
+
+### Main Page (index.tsx)
+- **My Lists Functionality**: Create a "My Lists" section that displays saved flashcard sets
+- **Local Storage**: Store flashcard list metadata in localStorage or IndexedDB
+- **List Management**: For each saved list, store:
+  - Title of the flashcard set
+  - View URL for quick access
+  - Creation/last accessed date
+  - Number of cards
+- **Quick Access**: Allow users to click on saved lists to immediately view or edit them
+
+### Create Page (create.tsx)
+- **View Immediately Button**: Add button that opens the current flashcard set in view mode
+  - Opens in new tab/window
+  - Should work even with unsaved changes
+- **Add to My List Button**: Add button to save current flashcard set to "My Lists"
+  - Save to localStorage/IndexedDB
+  - Show confirmation when saved
+  - Update existing entry if already saved
+
+### View Page (view.tsx)
+- **Shuffle Orders**: Add toggle to randomize the order of cards
+- **Shuffle Front/Back**: Add toggle to randomly show front or back first
+- **Flipped**: Add toggle to study cards with front and back swapped (back shown first, front as answer)
+- **Study Incorrect Only**: After completing a study session:
+  - Show option to "Study Incorrect Answers Only"
+  - Create new session with only the cards answered incorrectly
+  - Maintain original shuffle settings if enabled
