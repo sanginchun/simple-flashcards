@@ -340,12 +340,27 @@ export default function ViewPage() {
 
             <button
               onClick={handleNext}
-              disabled={session.currentIndex === studyCards.length - 1}
+              disabled={
+                session.currentIndex === studyCards.length - 1 ||
+                !session.currentCardAnswered
+              }
               className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next
             </button>
           </div>
+
+          {/* Study Progress Hint */}
+          {!session.currentCardAnswered &&
+            session.currentIndex < studyCards.length - 1 && (
+              <div className="text-center pt-2">
+                <p className="text-sm text-gray-500">
+                  {session.showBack
+                    ? "Check correct or incorrect"
+                    : "Flip the card and check answer"}
+                </p>
+              </div>
+            )}
 
           {/* Answer Buttons */}
           {session.showBack && (

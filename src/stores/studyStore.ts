@@ -31,6 +31,7 @@ const initialSession: StudySession = {
   showBack: false,
   correctAnswers: 0,
   totalAnswered: 0,
+  currentCardAnswered: false,
   options: {
     shuffleOrders: false,
     flipped: false,
@@ -88,6 +89,7 @@ export const useStudyStore = create<StudyState>()(
         state.session.showBack = false;
         state.session.correctAnswers = 0;
         state.session.totalAnswered = 0;
+        state.session.currentCardAnswered = false;
         state.isComplete = false;
       });
     },
@@ -107,12 +109,14 @@ export const useStudyStore = create<StudyState>()(
           ? state.session.correctAnswers + 1
           : state.session.correctAnswers;
         state.session.totalAnswered += 1;
+        state.session.currentCardAnswered = true;
         state.session.showBack = false;
 
         if (state.session.currentIndex + 1 >= studyCards.length) {
           state.isComplete = true;
         } else {
           state.session.currentIndex += 1;
+          state.session.currentCardAnswered = false; // Reset for next card
         }
       });
     },
@@ -125,6 +129,7 @@ export const useStudyStore = create<StudyState>()(
         if (state.session.currentIndex < studyCards.length - 1) {
           state.session.currentIndex += 1;
           state.session.showBack = false;
+          state.session.currentCardAnswered = false;
         }
       });
     },
@@ -134,6 +139,7 @@ export const useStudyStore = create<StudyState>()(
         if (state.session.currentIndex > 0) {
           state.session.currentIndex -= 1;
           state.session.showBack = false;
+          state.session.currentCardAnswered = false;
         }
       });
     },
@@ -154,6 +160,7 @@ export const useStudyStore = create<StudyState>()(
         state.session.showBack = false;
         state.session.correctAnswers = 0;
         state.session.totalAnswered = 0;
+        state.session.currentCardAnswered = false;
         state.isComplete = false;
       });
     },

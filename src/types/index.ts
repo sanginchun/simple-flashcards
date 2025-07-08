@@ -20,6 +20,7 @@ export interface StudySession {
   showBack: boolean;
   correctAnswers: number;
   totalAnswered: number;
+  currentCardAnswered: boolean;
   options: StudyOptions;
 }
 
