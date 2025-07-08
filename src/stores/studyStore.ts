@@ -13,6 +13,7 @@ interface StudyState {
   setList: (list: FlashcardList) => void;
   setStudyOptions: (options: StudyOptions) => void;
   startStudy: () => void;
+  startIncorrectOnlyStudy: () => void;
   flipCard: () => void;
   answerCard: (correct: boolean) => void;
   nextCard: () => void;
@@ -32,6 +33,7 @@ const initialSession: StudySession = {
   correctAnswers: 0,
   totalAnswered: 0,
   currentCardAnswered: false,
+  incorrectCards: [],
   options: {
     shuffleOrders: false,
     flipped: false,
@@ -90,6 +92,29 @@ export const useStudyStore = create<StudyState>()(
         state.session.correctAnswers = 0;
         state.session.totalAnswered = 0;
         state.session.currentCardAnswered = false;
+        state.session.incorrectCards = [];
+        state.isComplete = false;
+      });
+    },
+
+    startIncorrectOnlyStudy: () => {
+      const { session } = get();
+      
+      set((state) => {
+        // Use incorrect cards from previous session
+        if (session.options.shuffleOrders) {
+          state.studyCards = shuffleArray(session.incorrectCards);
+        } else {
+          state.studyCards = [...session.incorrectCards];
+        }
+        
+        state.isPreparing = false;
+        state.session.currentIndex = 0;
+        state.session.showBack = false;
+        state.session.correctAnswers = 0;
+        state.session.totalAnswered = 0;
+        state.session.currentCardAnswered = false;
+        state.session.incorrectCards = [];
         state.isComplete = false;
       });
     },
@@ -103,6 +128,8 @@ export const useStudyStore = create<StudyState>()(
     answerCard: (correct: boolean) => {
       const { studyCards, session } = get();
       if (!studyCards.length || !session.showBack) return;
+      
+      const currentCard = studyCards[session.currentIndex];
 
       set((state) => {
         state.session.correctAnswers = correct
@@ -111,6 +138,17 @@ export const useStudyStore = create<StudyState>()(
         state.session.totalAnswered += 1;
         state.session.currentCardAnswered = true;
         state.session.showBack = false;
+        
+        // Track incorrect cards
+        if (!correct && currentCard) {
+          // Only add if not already in the list
+          const alreadyIncorrect = state.session.incorrectCards.some(
+            card => card.id === currentCard.id
+          );
+          if (!alreadyIncorrect) {
+            state.session.incorrectCards.push(currentCard);
+          }
+        }
 
         if (state.session.currentIndex + 1 >= studyCards.length) {
           state.isComplete = true;
@@ -161,6 +199,7 @@ export const useStudyStore = create<StudyState>()(
         state.session.correctAnswers = 0;
         state.session.totalAnswered = 0;
         state.session.currentCardAnswered = false;
+        state.session.incorrectCards = [];
         state.isComplete = false;
       });
     },

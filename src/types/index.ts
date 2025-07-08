@@ -21,6 +21,7 @@ export interface StudySession {
   correctAnswers: number;
   totalAnswered: number;
   currentCardAnswered: boolean;
+  incorrectCards: Flashcard[];
   options: StudyOptions;
 }
 

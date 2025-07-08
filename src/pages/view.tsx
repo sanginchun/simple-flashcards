@@ -15,6 +15,7 @@ export default function ViewPage() {
     setList,
     setStudyOptions,
     startStudy,
+    startIncorrectOnlyStudy,
     flipCard,
     answerCard,
     nextCard,
@@ -221,6 +222,11 @@ export default function ViewPage() {
               You got {session.correctAnswers} out of {session.totalAnswered}{" "}
               correct
             </p>
+            {session.incorrectCards.length > 0 && (
+              <p className="text-sm text-red-600 mt-2">
+                {session.incorrectCards.length} card{session.incorrectCards.length === 1 ? '' : 's'} need{session.incorrectCards.length === 1 ? 's' : ''} more practice
+              </p>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -230,6 +236,14 @@ export default function ViewPage() {
             >
               Study Again
             </button>
+            {session.incorrectCards.length > 0 && (
+              <button
+                onClick={startIncorrectOnlyStudy}
+                className="w-full bg-red-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Study Incorrect Only ({session.incorrectCards.length} cards)
+              </button>
+            )}
             <button
               onClick={() => router.push("/")}
               className="w-full bg-gray-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors"
