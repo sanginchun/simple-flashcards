@@ -1,28 +1,29 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { FlashcardList } from "@/types";
-import {
-  createEmptyList,
-  createEmptyCard,
-  addCardToList,
-  updateCardInList,
-  removeCardFromList,
-  updateListTitle,
-  validateCardText,
-} from "@/utils/flashcards";
-import {
-  decodeListFromUrl,
-  updateUrlWithList,
-  generateShareableUrl,
-} from "@/utils/urlData";
-import { saveFlashcardList } from "@/utils/savedLists";
+import { decodeListFromUrl, updateUrlWithList, generateShareableUrl } from "@/utils/urlData";
+import { useFlashcardStore } from "../stores/flashcardStore";
+import { useSavedListsStore } from "../stores/savedListsStore";
 
 export default function CreatePage() {
   const router = useRouter();
-  const [list, setList] = useState<FlashcardList>(createEmptyList());
-  const [shareUrl, setShareUrl] = useState<string>("");
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const {
+    list,
+    hasUnsavedChanges,
+    shareUrl,
+    showShareModal,
+    setList,
+    resetToEmpty,
+    updateTitle,
+    addCard,
+    updateCard,
+    deleteCard,
+    markSaved,
+    generateShareUrl,
+    setShowShareModal,
+    isValidForSaving
+  } = useFlashcardStore();
+  
+  const { saveFlashcardList } = useSavedListsStore();
 
   useEffect(() => {
     // Get hash from URL instead of query parameters
@@ -32,31 +33,25 @@ export default function CreatePage() {
         const decodedList = decodeListFromUrl(hash);
         if (decodedList) {
           setList(decodedList);
-          setHasUnsavedChanges(false);
         } else {
           // If decoding fails, start with an empty list
           console.warn("Failed to decode URL data, starting with empty list");
-          setList(createEmptyList());
+          resetToEmpty();
         }
       } catch (error) {
         console.error("Error decoding URL data:", error);
         // Start with empty list if URL data is corrupted
-        setList(createEmptyList());
+        resetToEmpty();
       }
     }
-  }, [router, router.asPath]); // Listen to asPath changes to catch hash changes
+  }, [router, router.asPath, setList, resetToEmpty]); // Listen to asPath changes to catch hash changes
 
   const handleTitleChange = (title: string) => {
-    const updatedList = updateListTitle(list, title);
-    setList(updatedList);
-    setHasUnsavedChanges(true);
+    updateTitle(title);
   };
 
   const handleAddCard = () => {
-    const newCard = createEmptyCard();
-    const updatedList = addCardToList(list, newCard);
-    setList(updatedList);
-    setHasUnsavedChanges(true);
+    addCard();
   };
 
   const handleUpdateCard = (
@@ -64,45 +59,26 @@ export default function CreatePage() {
     field: "front" | "back",
     value: string
   ) => {
-    if (!validateCardText(value)) {
+    const success = updateCard(cardId, field, value);
+    if (!success) {
       alert("Text too long! Please keep it under 200 characters.");
-      return;
     }
-
-    const updatedList = updateCardInList(list, cardId, { [field]: value });
-    setList(updatedList);
-    setHasUnsavedChanges(true);
   };
 
   const handleDeleteCard = (cardId: string) => {
-    const updatedList = removeCardFromList(list, cardId);
-    setList(updatedList);
-    setHasUnsavedChanges(true);
+    deleteCard(cardId);
   };
 
   const handleSave = () => {
-    if (!list.title.trim()) {
-      alert("Please enter a title for your flashcard set!");
-      return;
-    }
-
-    if (list.cards.length === 0) {
-      alert("Please add at least one flashcard!");
-      return;
-    }
-
-    // Check if any cards have empty fields
-    const hasEmptyCards = list.cards.some(
-      (card) => !card.front.trim() || !card.back.trim()
-    );
-    if (hasEmptyCards) {
-      alert("Please fill in all flashcard fields before saving!");
+    const validation = isValidForSaving();
+    if (!validation.isValid) {
+      alert(validation.error);
       return;
     }
 
     try {
       updateUrlWithList(list, router);
-      setHasUnsavedChanges(false);
+      markSaved();
       alert("Flashcard set saved successfully!");
     } catch {
       alert("Error saving flashcard set. It might be too large.");
@@ -110,34 +86,20 @@ export default function CreatePage() {
   };
 
   const handleShare = () => {
-    if (!list.title.trim()) {
-      alert("Please enter a title for your flashcard set!");
-      return;
-    }
-
-    if (list.cards.length === 0) {
-      alert("Please add some flashcards before sharing!");
-      return;
-    }
-
-    // Check if any cards have empty fields
-    const hasEmptyCards = list.cards.some(
-      (card) => !card.front.trim() || !card.back.trim()
-    );
-    if (hasEmptyCards) {
-      alert("Please fill in all flashcard fields before sharing!");
+    const validation = isValidForSaving();
+    if (!validation.isValid) {
+      alert(validation.error?.replace('saving', 'sharing'));
       return;
     }
 
     try {
-      const url = generateShareableUrl(list);
-      setShareUrl(url);
+      generateShareUrl();
       setShowShareModal(true);
 
       // Also save to URL when sharing
       if (hasUnsavedChanges) {
         updateUrlWithList(list, router);
-        setHasUnsavedChanges(false);
+        markSaved();
       }
     } catch {
       alert(
@@ -152,29 +114,14 @@ export default function CreatePage() {
   };
 
   const handleAddToMyLists = () => {
-    if (!list.title.trim()) {
-      alert("Please enter a title for your flashcard set!");
-      return;
-    }
-
-    if (list.cards.length === 0) {
-      alert("Please add at least one flashcard!");
-      return;
-    }
-
-    const hasEmptyCards = list.cards.some(
-      (card) => !card.front.trim() || !card.back.trim()
-    );
-    if (hasEmptyCards) {
-      alert("Please fill in all flashcard fields before saving!");
+    const validation = isValidForSaving();
+    if (!validation.isValid) {
+      alert(validation.error);
       return;
     }
 
     try {
-      const viewUrl = generateShareableUrl(list, "view");
-      const editUrl = generateShareableUrl(list, "create");
-
-      saveFlashcardList(list, viewUrl, editUrl);
+      saveFlashcardList(list);
       alert("Flashcard set saved to My Lists!");
     } catch {
       alert("Error saving to My Lists. Your flashcard set might be too large.");
@@ -182,21 +129,9 @@ export default function CreatePage() {
   };
 
   const handleViewImmediately = () => {
-    if (!list.title.trim()) {
-      alert("Please enter a title for your flashcard set!");
-      return;
-    }
-
-    if (list.cards.length === 0) {
-      alert("Please add at least one flashcard!");
-      return;
-    }
-
-    const hasEmptyCards = list.cards.some(
-      (card) => !card.front.trim() || !card.back.trim()
-    );
-    if (hasEmptyCards) {
-      alert("Please fill in all flashcard fields before viewing!");
+    const validation = isValidForSaving();
+    if (!validation.isValid) {
+      alert(validation.error?.replace('saving', 'viewing'));
       return;
     }
 

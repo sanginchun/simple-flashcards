@@ -1,20 +1,27 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { FlashcardList, StudySession } from "@/types";
-import { decodeListFromUrl, generateShareableUrl } from "@/utils/urlData";
-import { saveFlashcardList, getSavedLists } from "@/utils/savedLists";
+import { decodeListFromUrl } from "@/utils/urlData";
+import { useStudyStore } from "../stores/studyStore";
+import { useSavedListsStore } from "../stores/savedListsStore";
 
 export default function ViewPage() {
   const router = useRouter();
-  const [list, setList] = useState<FlashcardList | null>(null);
-  const [session, setSession] = useState<StudySession>({
-    currentIndex: 0,
-    showBack: false,
-    correctAnswers: 0,
-    totalAnswered: 0,
-  });
-  const [isComplete, setIsComplete] = useState(false);
-  const [isListSaved, setIsListSaved] = useState(false);
+  const {
+    list,
+    session,
+    isComplete,
+    setList,
+    flipCard,
+    answerCard,
+    nextCard,
+    previousCard,
+    restart,
+    getCurrentCard,
+    getProgress,
+    getPercentage
+  } = useStudyStore();
+  
+  const { saveFlashcardList, isListSaved } = useSavedListsStore();
 
   useEffect(() => {
     // Get hash from URL instead of query parameters
@@ -24,13 +31,6 @@ export default function ViewPage() {
         const decodedList = decodeListFromUrl(hash);
         if (decodedList) {
           setList(decodedList);
-
-          // Check if this list is already saved
-          const savedLists = getSavedLists();
-          const isSaved = savedLists.some(
-            (saved) => saved.id === decodedList.id
-          );
-          setIsListSaved(isSaved);
         } else {
           console.warn("Failed to decode URL data, redirecting to home");
           router.push("/");
@@ -43,7 +43,7 @@ export default function ViewPage() {
       // No hash data, redirect to home
       router.push("/");
     }
-  }, [router, router.asPath]); // Listen to asPath changes to catch hash changes
+  }, [router, router.asPath, setList]); // Listen to asPath changes to catch hash changes
 
   if (!list) {
     return (
@@ -77,11 +77,11 @@ export default function ViewPage() {
     );
   }
 
-  const currentCard = list.cards[session.currentIndex];
-  const progress = ((session.currentIndex + 1) / list.cards.length) * 100;
+  const currentCard = getCurrentCard();
+  const progress = getProgress();
 
   const handleFlip = () => {
-    setSession((prev) => ({ ...prev, showBack: !prev.showBack }));
+    flipCard();
   };
 
   const handleAnswer = (correct: boolean) => {
@@ -89,60 +89,26 @@ export default function ViewPage() {
       alert("Please flip the card to see the answer first!");
       return;
     }
-
-    setSession((prev) => ({
-      ...prev,
-      correctAnswers: correct ? prev.correctAnswers + 1 : prev.correctAnswers,
-      totalAnswered: prev.totalAnswered + 1,
-      showBack: false,
-    }));
-
-    if (session.currentIndex + 1 >= list.cards.length) {
-      setIsComplete(true);
-    } else {
-      setSession((prev) => ({ ...prev, currentIndex: prev.currentIndex + 1 }));
-    }
+    answerCard(correct);
   };
 
   const handleRestart = () => {
-    setSession({
-      currentIndex: 0,
-      showBack: false,
-      correctAnswers: 0,
-      totalAnswered: 0,
-    });
-    setIsComplete(false);
+    restart();
   };
 
   const handlePrevious = () => {
-    if (session.currentIndex > 0) {
-      setSession((prev) => ({
-        ...prev,
-        currentIndex: prev.currentIndex - 1,
-        showBack: false,
-      }));
-    }
+    previousCard();
   };
 
   const handleNext = () => {
-    if (session.currentIndex < list.cards.length - 1) {
-      setSession((prev) => ({
-        ...prev,
-        currentIndex: prev.currentIndex + 1,
-        showBack: false,
-      }));
-    }
+    nextCard();
   };
 
   const handleSaveToMyLists = () => {
     if (!list) return;
 
     try {
-      const viewUrl = generateShareableUrl(list, "view");
-      const editUrl = generateShareableUrl(list, "create");
-
-      saveFlashcardList(list, viewUrl, editUrl);
-      setIsListSaved(true);
+      saveFlashcardList(list);
       alert("Flashcard set saved to My Lists!");
     } catch {
       alert("Error saving to My Lists.");
@@ -150,9 +116,7 @@ export default function ViewPage() {
   };
 
   if (isComplete) {
-    const percentage = Math.round(
-      (session.correctAnswers / session.totalAnswered) * 100
-    );
+    const percentage = getPercentage();
 
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -197,7 +161,7 @@ export default function ViewPage() {
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-2xl font-bold text-gray-900">{list.title}</h1>
             <div className="flex gap-2">
-              {!isListSaved && (
+              {list && !isListSaved(list.id) && (
                 <button
                   onClick={handleSaveToMyLists}
                   className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
@@ -244,7 +208,7 @@ export default function ViewPage() {
                 {session.showBack ? "Back" : "Front"}
               </div>
               <div className="text-lg text-gray-900 leading-relaxed">
-                {session.showBack ? currentCard.back : currentCard.front}
+                {currentCard && (session.showBack ? currentCard.back : currentCard.front)}
               </div>
             </div>
           </div>

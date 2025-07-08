@@ -23,6 +23,5 @@ export interface SavedList {
   cardCount: number;
   createdAt: Date;
   lastAccessed: Date;
-  viewUrl: string;
-  editUrl: string;
+  encodedData: string;
 }

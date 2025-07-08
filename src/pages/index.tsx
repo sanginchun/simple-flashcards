@@ -1,18 +1,11 @@
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { SavedList } from '../types';
-import { getSavedLists, deleteSavedList, updateLastAccessed } from '../utils/savedLists';
+import { useSavedListsStore } from '../stores/savedListsStore';
 
 export default function Home() {
-  const [savedLists, setSavedLists] = useState<SavedList[]>([]);
-
-  useEffect(() => {
-    setSavedLists(getSavedLists());
-  }, []);
+  const { savedLists, deleteSavedList, updateLastAccessed } = useSavedListsStore();
 
   const handleDeleteList = (id: string) => {
     deleteSavedList(id);
-    setSavedLists(getSavedLists());
   };
 
   const handleAccessList = (id: string) => {
@@ -61,14 +54,14 @@ export default function Home() {
                       </div>
                       <div className="flex space-x-2">
                         <Link
-                          href={list.viewUrl}
+                          href={`/view#${list.encodedData}`}
                           onClick={() => handleAccessList(list.id)}
                           className="flex-1 bg-green-600 text-white text-sm py-2 px-3 rounded hover:bg-green-700 transition-colors text-center"
                         >
                           Study
                         </Link>
                         <Link
-                          href={list.editUrl}
+                          href={`/create#${list.encodedData}`}
                           onClick={() => handleAccessList(list.id)}
                           className="flex-1 bg-gray-600 text-white text-sm py-2 px-3 rounded hover:bg-gray-700 transition-colors text-center"
                         >
