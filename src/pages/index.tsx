@@ -64,14 +64,14 @@ export default function Home() {
                       </div>
                       <div className="flex space-x-2">
                         <Link
-                          href={`/view#${list.encodedData}`}
+                          href={`/view#${encodeURIComponent(list.encodedData)}`}
                           onClick={() => handleAccessList(list.id)}
                           className="flex-1 bg-green-600 text-white text-sm py-2 px-3 rounded hover:bg-green-700 transition-colors text-center"
                         >
                           Study
                         </Link>
                         <Link
-                          href={`/create#${list.encodedData}`}
+                          href={`/create#${encodeURIComponent(list.encodedData)}`}
                           onClick={() => handleAccessList(list.id)}
                           className="flex-1 bg-gray-600 text-white text-sm py-2 px-3 rounded hover:bg-gray-700 transition-colors text-center"
                         >

@@ -28,7 +28,9 @@ export default function ViewPage() {
     const hash = window.location.hash.slice(1); // Remove the # symbol
     if (hash) {
       try {
-        const decodedList = decodeListFromUrl(hash);
+        // Decode URL-encoded data first
+        const decodedHash = decodeURIComponent(hash);
+        const decodedList = decodeListFromUrl(decodedHash);
         if (decodedList) {
           setList(decodedList);
         } else {

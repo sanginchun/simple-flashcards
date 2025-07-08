@@ -108,7 +108,7 @@ export const decodeListFromUrl = (
 export const updateUrlWithList = (list: FlashcardList, router: { push: (url: string, as?: string, options?: { shallow?: boolean }) => void }) => {
   try {
     const encodedData = encodeListToUrl(list);
-    const url = `/create#${encodedData}`;
+    const url = `/create#${encodeURIComponent(encodedData)}`;
     router.push(url, undefined, { shallow: true });
   } catch (error) {
     console.error("Error updating URL with list:", error);
@@ -119,7 +119,7 @@ export const generateShareableUrl = (list: FlashcardList, page: 'view' | 'create
   try {
     const encodedData = encodeListToUrl(list);
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-    return `${baseUrl}/${page}#${encodedData}`;
+    return `${baseUrl}/${page}#${encodeURIComponent(encodedData)}`;
   } catch (error) {
     console.error("Error generating shareable URL:", error);
     throw error;
