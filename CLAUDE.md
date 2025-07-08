@@ -77,24 +77,6 @@ npm run lint
   - Allow external MCP clients to interact with flashcard data
   - Implement secure authentication for MCP connections
 
-### Main Page (index.tsx)
-- **My Lists Functionality**: Create a "My Lists" section that displays saved flashcard sets
-- **Local Storage**: Store flashcard list metadata in localStorage or IndexedDB
-- **List Management**: For each saved list, store:
-  - Title of the flashcard set
-  - View URL for quick access
-  - Creation/last accessed date
-  - Number of cards
-- **Quick Access**: Allow users to click on saved lists to immediately view or edit them
-
-### Create Page (create.tsx)
-- **View Immediately Button**: Add button that opens the current flashcard set in view mode
-  - Opens in new tab/window
-  - Should work even with unsaved changes
-- **Add to My List Button**: Add button to save current flashcard set to "My Lists"
-  - Save to localStorage/IndexedDB
-  - Show confirmation when saved
-  - Update existing entry if already saved
 
 ### View Page (view.tsx)
 - **Shuffle Orders**: Add toggle to randomize the order of cards
