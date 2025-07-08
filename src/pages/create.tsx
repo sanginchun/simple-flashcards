@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { decodeListFromUrl, updateUrlWithList, generateShareableUrl } from "@/utils/urlData";
+import {
+  decodeListFromUrl,
+  updateUrlWithList,
+  generateShareableUrl,
+} from "@/utils/urlData";
 import { useFlashcardStore } from "../stores/flashcardStore";
 import { useSavedListsStore } from "../stores/savedListsStore";
 
@@ -20,10 +24,10 @@ export default function CreatePage() {
     markSaved,
     generateShareUrl,
     setShowShareModal,
-    isValidForSaving
+    isValidForSaving,
   } = useFlashcardStore();
-  
-  const { saveFlashcardList } = useSavedListsStore();
+
+  const { saveFlashcardList, isListSaved } = useSavedListsStore();
 
   useEffect(() => {
     // Get hash from URL instead of query parameters
@@ -79,6 +83,12 @@ export default function CreatePage() {
     try {
       updateUrlWithList(list, router);
       markSaved();
+      
+      // Auto-update My Lists if this list is already saved
+      if (isListSaved(list.id)) {
+        saveFlashcardList(list);
+      }
+      
       alert("Flashcard set saved successfully!");
     } catch {
       alert("Error saving flashcard set. It might be too large.");
@@ -88,7 +98,7 @@ export default function CreatePage() {
   const handleShare = () => {
     const validation = isValidForSaving();
     if (!validation.isValid) {
-      alert(validation.error?.replace('saving', 'sharing'));
+      alert(validation.error?.replace("saving", "sharing"));
       return;
     }
 
@@ -100,6 +110,11 @@ export default function CreatePage() {
       if (hasUnsavedChanges) {
         updateUrlWithList(list, router);
         markSaved();
+        
+        // Auto-update My Lists if this list is already saved
+        if (isListSaved(list.id)) {
+          saveFlashcardList(list);
+        }
       }
     } catch {
       alert(
@@ -131,7 +146,7 @@ export default function CreatePage() {
   const handleViewImmediately = () => {
     const validation = isValidForSaving();
     if (!validation.isValid) {
-      alert(validation.error?.replace('saving', 'viewing'));
+      alert(validation.error?.replace("saving", "viewing"));
       return;
     }
 
@@ -172,12 +187,14 @@ export default function CreatePage() {
               >
                 Save
               </button>
-              <button
-                onClick={handleAddToMyLists}
-                className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
-              >
-                Add to My Lists
-              </button>
+              {!isListSaved(list.id) && (
+                <button
+                  onClick={handleAddToMyLists}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors"
+                >
+                  Add to My Lists
+                </button>
+              )}
               <button
                 onClick={handleViewImmediately}
                 className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors"

@@ -18,9 +18,9 @@ export default function ViewPage() {
     restart,
     getCurrentCard,
     getProgress,
-    getPercentage
+    getPercentage,
   } = useStudyStore();
-  
+
   const { saveFlashcardList, isListSaved } = useSavedListsStore();
 
   useEffect(() => {
@@ -208,7 +208,8 @@ export default function ViewPage() {
                 {session.showBack ? "Back" : "Front"}
               </div>
               <div className="text-lg text-gray-900 leading-relaxed">
-                {currentCard && (session.showBack ? currentCard.back : currentCard.front)}
+                {currentCard &&
+                  (session.showBack ? currentCard.back : currentCard.front)}
               </div>
             </div>
           </div>
