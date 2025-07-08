@@ -10,11 +10,17 @@ export interface FlashcardList {
   cards: Flashcard[];
 }
 
+export interface StudyOptions {
+  shuffleOrders: boolean;
+  flipped: boolean;
+}
+
 export interface StudySession {
   currentIndex: number;
   showBack: boolean;
   correctAnswers: number;
   totalAnswered: number;
+  options: StudyOptions;
 }
 
 export interface SavedList {

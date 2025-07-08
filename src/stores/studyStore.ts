@@ -1,14 +1,18 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { FlashcardList, StudySession, Flashcard } from "../types";
+import { FlashcardList, StudySession, Flashcard, StudyOptions } from "../types";
 
 interface StudyState {
   list: FlashcardList | null;
   session: StudySession;
   isComplete: boolean;
+  isPreparing: boolean;
+  studyCards: Flashcard[]; // Cards in study order (possibly shuffled)
 
   // Actions
   setList: (list: FlashcardList) => void;
+  setStudyOptions: (options: StudyOptions) => void;
+  startStudy: () => void;
   flipCard: () => void;
   answerCard: (correct: boolean) => void;
   nextCard: () => void;
@@ -27,6 +31,20 @@ const initialSession: StudySession = {
   showBack: false,
   correctAnswers: 0,
   totalAnswered: 0,
+  options: {
+    shuffleOrders: false,
+    flipped: false,
+  },
+};
+
+// Helper function to shuffle array
+const shuffleArray = <T>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 };
 
 export const useStudyStore = create<StudyState>()(
@@ -34,11 +52,42 @@ export const useStudyStore = create<StudyState>()(
     list: null,
     session: { ...initialSession },
     isComplete: false,
+    isPreparing: false,
+    studyCards: [],
 
     setList: (list: FlashcardList) => {
       set((state) => {
         state.list = list;
         state.session = { ...initialSession };
+        state.isComplete = false;
+        state.isPreparing = true;
+        state.studyCards = [...list.cards];
+      });
+    },
+
+    setStudyOptions: (options: StudyOptions) => {
+      set((state) => {
+        state.session.options = options;
+      });
+    },
+
+    startStudy: () => {
+      const { list } = get();
+      if (!list) return;
+
+      set((state) => {
+        // Apply shuffle if enabled
+        if (state.session.options.shuffleOrders) {
+          state.studyCards = shuffleArray(list.cards);
+        } else {
+          state.studyCards = [...list.cards];
+        }
+
+        state.isPreparing = false;
+        state.session.currentIndex = 0;
+        state.session.showBack = false;
+        state.session.correctAnswers = 0;
+        state.session.totalAnswered = 0;
         state.isComplete = false;
       });
     },
@@ -50,8 +99,8 @@ export const useStudyStore = create<StudyState>()(
     },
 
     answerCard: (correct: boolean) => {
-      const { list, session } = get();
-      if (!list || !session.showBack) return;
+      const { studyCards, session } = get();
+      if (!studyCards.length || !session.showBack) return;
 
       set((state) => {
         state.session.correctAnswers = correct
@@ -60,7 +109,7 @@ export const useStudyStore = create<StudyState>()(
         state.session.totalAnswered += 1;
         state.session.showBack = false;
 
-        if (state.session.currentIndex + 1 >= list.cards.length) {
+        if (state.session.currentIndex + 1 >= studyCards.length) {
           state.isComplete = true;
         } else {
           state.session.currentIndex += 1;
@@ -69,11 +118,11 @@ export const useStudyStore = create<StudyState>()(
     },
 
     nextCard: () => {
-      const { list } = get();
-      if (!list) return;
+      const { studyCards } = get();
+      if (!studyCards.length) return;
 
       set((state) => {
-        if (state.session.currentIndex < list.cards.length - 1) {
+        if (state.session.currentIndex < studyCards.length - 1) {
           state.session.currentIndex += 1;
           state.session.showBack = false;
         }
@@ -90,8 +139,21 @@ export const useStudyStore = create<StudyState>()(
     },
 
     restart: () => {
+      const { list } = get();
+      if (!list) return;
+
       set((state) => {
-        state.session = { ...initialSession };
+        // Apply shuffle if enabled
+        if (state.session.options.shuffleOrders) {
+          state.studyCards = shuffleArray(list.cards);
+        } else {
+          state.studyCards = [...list.cards];
+        }
+
+        state.session.currentIndex = 0;
+        state.session.showBack = false;
+        state.session.correctAnswers = 0;
+        state.session.totalAnswered = 0;
         state.isComplete = false;
       });
     },
@@ -101,19 +163,21 @@ export const useStudyStore = create<StudyState>()(
         state.list = null;
         state.session = { ...initialSession };
         state.isComplete = false;
+        state.isPreparing = false;
+        state.studyCards = [];
       });
     },
 
     getCurrentCard: () => {
-      const { list, session } = get();
-      if (!list || !list.cards[session.currentIndex]) return null;
-      return list.cards[session.currentIndex];
+      const { studyCards, session } = get();
+      if (!studyCards.length || !studyCards[session.currentIndex]) return null;
+      return studyCards[session.currentIndex];
     },
 
     getProgress: () => {
-      const { list, session } = get();
-      if (!list || list.cards.length === 0) return 0;
-      return ((session.currentIndex + 1) / list.cards.length) * 100;
+      const { studyCards, session } = get();
+      if (!studyCards.length) return 0;
+      return ((session.currentIndex + 1) / studyCards.length) * 100;
     },
 
     getPercentage: () => {

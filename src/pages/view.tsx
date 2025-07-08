@@ -10,7 +10,11 @@ export default function ViewPage() {
     list,
     session,
     isComplete,
+    isPreparing,
+    studyCards,
     setList,
+    setStudyOptions,
+    startStudy,
     flipCard,
     answerCard,
     nextCard,
@@ -74,6 +78,89 @@ export default function ViewPage() {
           >
             Go Home
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show prepare state
+  if (isPreparing) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {list.title}
+              </h1>
+              <p className="text-gray-600">
+                {list.cards.length} cards • Configure your study options
+              </p>
+            </div>
+
+            <div className="space-y-6 mb-8">
+              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div>
+                  <h3 className="font-medium text-gray-900">Shuffle Orders</h3>
+                  <p className="text-sm text-gray-500">
+                    Randomize the order of cards
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={session.options.shuffleOrders}
+                    onChange={(e) =>
+                      setStudyOptions({
+                        ...session.options,
+                        shuffleOrders: e.target.checked,
+                      })
+                    }
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div>
+                  <h3 className="font-medium text-gray-900">Flipped Mode</h3>
+                  <p className="text-sm text-gray-500">
+                    Show back first, front as answer
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={session.options.flipped}
+                    onChange={(e) =>
+                      setStudyOptions({
+                        ...session.options,
+                        flipped: e.target.checked,
+                      })
+                    }
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => router.push("/")}
+                className="flex-1 bg-gray-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Back to Home
+              </button>
+              <button
+                onClick={startStudy}
+                className="flex-1 bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Start Study
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -185,7 +272,7 @@ export default function ViewPage() {
             <div className="flex justify-between text-sm text-gray-600 mb-2">
               <span>Progress</span>
               <span>
-                {session.currentIndex + 1} / {list.cards.length}
+                {session.currentIndex + 1} / {studyCards.length}
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -206,12 +293,18 @@ export default function ViewPage() {
         <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
           <div className="text-center min-h-[200px] flex items-center justify-center">
             <div className="w-full">
-              <div className="text-sm text-gray-500 mb-4">
-                {session.showBack ? "Back" : "Front"}
-              </div>
               <div className="text-lg text-gray-900 leading-relaxed">
                 {currentCard &&
-                  (session.showBack ? currentCard.back : currentCard.front)}
+                  (() => {
+                    const { flipped } = session.options;
+                    const { showBack } = session;
+
+                    if (flipped) {
+                      return showBack ? currentCard.front : currentCard.back;
+                    } else {
+                      return showBack ? currentCard.back : currentCard.front;
+                    }
+                  })()}
               </div>
             </div>
           </div>
@@ -221,7 +314,11 @@ export default function ViewPage() {
               onClick={handleFlip}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
-              {session.showBack ? "Show Front" : "Show Answer"}
+              {(() => {
+                const { showBack } = session;
+
+                return showBack ? "Show Question" : "Show Answer";
+              })()}
             </button>
           </div>
         </div>
@@ -238,12 +335,12 @@ export default function ViewPage() {
             </button>
 
             <div className="text-sm text-gray-600">
-              Card {session.currentIndex + 1} of {list.cards.length}
+              Card {session.currentIndex + 1} of {studyCards.length}
             </div>
 
             <button
               onClick={handleNext}
-              disabled={session.currentIndex === list.cards.length - 1}
+              disabled={session.currentIndex === studyCards.length - 1}
               className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Next
