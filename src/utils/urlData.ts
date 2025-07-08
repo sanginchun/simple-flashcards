@@ -115,11 +115,11 @@ export const updateUrlWithList = (list: FlashcardList, router: { push: (url: str
   }
 };
 
-export const generateShareableUrl = (list: FlashcardList): string => {
+export const generateShareableUrl = (list: FlashcardList, page: 'view' | 'create' = 'view'): string => {
   try {
     const encodedData = encodeListToUrl(list);
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
-    return `${baseUrl}/view#${encodedData}`;
+    return `${baseUrl}/${page}#${encodedData}`;
   } catch (error) {
     console.error("Error generating shareable URL:", error);
     throw error;

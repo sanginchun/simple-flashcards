@@ -16,3 +16,13 @@ export interface StudySession {
   correctAnswers: number;
   totalAnswered: number;
 }
+
+export interface SavedList {
+  id: string;
+  title: string;
+  cardCount: number;
+  createdAt: Date;
+  lastAccessed: Date;
+  viewUrl: string;
+  editUrl: string;
+}
