@@ -1,26 +1,109 @@
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap");
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafbff;
+  --foreground: #1e293b;
+  --card-background: #ffffff;
+  --border-color: #e2e8f0;
+  --accent-primary: #6366f1;
+  --accent-secondary: #f59e0b;
+  --gradient-start: #667eea;
+  --gradient-end: #764ba2;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card-background);
+  --color-border: var(--border-color);
+  --color-primary: var(--accent-primary);
+  --color-secondary: var(--accent-secondary);
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Outfit", system-ui, -apple-system, sans-serif;
+  --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-card-hover: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-card-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--gradient-start),
+    var(--gradient-end)
+  );
+  --border-radius-card: 16px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0f172a;
+    --foreground: #f1f5f9;
+    --card-background: #1e293b;
+    --border-color: #334155;
+    --accent-primary: #818cf8;
+    --accent-secondary: #fbbf24;
+    --gradient-start: #4c1d95;
+    --gradient-end: #1e1b4b;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom utility classes */
+.gradient-bg {
+  background: var(--gradient-primary);
+}
+
+.card-shadow {
+  box-shadow: var(--shadow-card);
+}
+
+.card-shadow-hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.card-shadow-lg {
+  box-shadow: var(--shadow-card-lg);
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Card flip animation */
+.flip-card {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: var(--border-radius-card);
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
 }
