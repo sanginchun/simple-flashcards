@@ -22,7 +22,9 @@ export default function SavedLists({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">My Lists</h2>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-200 mb-4">
+        My Lists
+      </h2>
       <div className="space-y-3">
         {sortedLists.map((list) => (
           <SavedListCard
